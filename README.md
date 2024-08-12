@@ -85,116 +85,61 @@ Make sure to read and follow the instructions below carefully. Good luck!
 
   ---
 
-  The div#weatherWidget element should only render once a city is requested. Use an inline style to set a display to "none" to hide before making a request.
+  // Task 1 - Hide the weather widget initially
+document.getElementById('weatherWidget').style.display = 'none';
 
-  ❗ In a future task, you will make it so that the display reverts to "block" on successful weather data retrieval.
+// Task 2 - Add event listener to the city dropdown
+const cityDropdown = document.getElementById('cityDropdown');
 
-  ---
+cityDropdown.addEventListener('change', async (event) => {
+    const selectedCity = event.target.value;
+    console.log(`Selected city: ${selectedCity}`);
 
-</details>
+    // Task 3 - Disable the dropdown, hide the widget, and show loading message
+    cityDropdown.disabled = true;
+    document.getElementById('weatherWidget').style.display = 'none';
+    document.querySelector('p.info').textContent = 'Fetching weather data...';
 
-#### 👉 TASK 2 - Add an event listener to the dropdown
+    // Task 4 - Form the correct URL and fetch the weather data
+    const url = `http://localhost:3003/api/weather?city=${encodeURIComponent(selectedCity)}`;
 
-<details>
-  <summary>Click to read</summary>
+    try {
+        const response = await axios.get(url);
+        const weatherData = response.data;
 
-  ---
+        // Task 5 - Handle the successful response
+        document.querySelector('p.info').textContent = '';
+        cityDropdown.disabled = false;
+        document.getElementById('weatherWidget').style.display = 'block';
 
-1. Research **what type** of event fires when a user selects an option using the dropdown.
+        // Inject data into the DOM
+        document.getElementById('cityName').textContent = weatherData.city;
+        document.getElementById('temperature').textContent = `${weatherData.temperature}°F`;
+        document.getElementById('conditions').textContent = weatherData.weather_description;
 
-1. Add an **event listener** to the dropdown that listens for this event involved in selecting a city, and log something to the console.
+        // Convert weather description to emoji
+        const descriptions = {
+            "Sunny": "☀️",
+            "Cloudy": "☁️",
+            "Rainy": "🌧️",
+            "Thunderstorm": "⛈️",
+            "Snowy": "❄️",
+            "Partly Cloudy": "⛅️"
+        };
+        document.getElementById('weatherIcon').textContent = descriptions[weatherData.weather_description];
 
-1. Research how to use JavaScript within the listener to find out **which city was selected**, and log its name to the console.
+        // Convert date to day of the week
+        const date = new Date(weatherData.date);
+        const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+        document.getElementById('dayOfWeek').textContent = days[date.getDay()];
 
-❗ It's possible more than one type of event could be used—research pros and cons of each.
+    } catch (error) {
+        console.error(`Error fetching weather data: ${error.message}`);
+    }
+});
 
-  ---
 
-</details>
 
-#### 👉 TASK 3 - Prepare to fetch the weather data
-
-<details>
-  <summary>Click to read</summary>
-
-  ---
-
-Because fetching operations can take anywhere from milliseconds to several seconds, it's customary to perform some DOM surgery just before launching the API request that shows the app is waiting for the response.
-
-Always working inside your event listener:
-
-1. Disable the dropdown after researching how. We want users making a new selection **after** the weather data for the selected location arrives!
-
-1. Modify the inline style on the **div#weatherWidget** by setting display to 'none'. Whenever a user selects a new city, the widget should hide until the request succeeds.
-
-1. Inject text content into p.info that reads `Fetching weather data...`. This text acts as loading indicator. Research shows users don't mind waiting for a bit, *as long as they're properly informed and entertained* by spinners, "wait" messages, and animations.
-
-❗ These little things don't sound very interesting but are, in fact, very important for a good user experience. Most users on the planet leverage slow networks and slow hardware.
-
-  ---
-
-</details>
-
-#### 👉 TASK 4 - Launch a request to the weather API
-
-<details>
-  <summary>Click to read</summary>
-
-  ---
-
-1. **Form a proper URL** using your JavaScript skills, and then use Axios to initiate a GET request to the URL. Make sure to request the weather for the correct city! You can find out which city got selected by inspecting `event.target.value` inside your event listener.
-
-1. Use Axios to make a GET request to the API.
-
-1. Handle promise rejection by logging the `error.message` to the console or by setting a [break point](https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/debugger) in the code.
-
-❗ You can test your error logging code by deliberately mistyping the URL to [get a 404 "Not Found" error](./images/error-console.png).
-
-❗ You can also see failures in Dev Tool's [Network tab](./images/error-networktab.png). In this example, the server returns JSON data containing an error message.
-
-❗ We will handle successful requests in the next task.
-
-  ---
-
-</details>
-
-#### 👉 TASK 5 - Handle data fetching success
-
-<details>
-  <summary>Click to read</summary>
-
-  ---
-
-Now that the data is available, some house-keeping operations are needed before we start working with the weather data:
-
-1. Empty out the text content of **p.info**.
-
-1. Re-enable the **dropdown**.
-
-1. Modify the inline style on the **div#weatherWidget** to make the element visible again.
-
-Finally, the main course! Use the API data to inject the correct information into the DOM, replacing the "placeholder" information in the HTML.
-
-Raw JSON **rarely can be used in the DOM unchanged**. More often than not, you'll need to transform the data before updating the DOM.
-
-For example, the `weather_description` needs to be **translated into the proper emoji**, by using a mapping object found inside `index.js`:
-
-```js
-let descriptions = [
-  ["Sunny", "☀️"],
-  ["Cloudy", "☁️"],
-  ["Rainy", "🌧️"],
-  ["Thunderstorm", "⛈️"],
-  ["Snowy", "❄️"],
-  ["Partly Cloudy", "⛅️"],
-]
-```
-
-Use your JavaScript powers to extract the emoji for a given `weather_description`.
-
-Another complication is that the dates are in the `yyyy-mm-dd` format. JavaScript can be used to figure out which day of the week a given date corresponds to. But since time-related code can be particularly tricky, it's OK to ask ChatGPT for a bit of help here, as long as you study the code it produces to the point where you can re-write it yourself.
-
-❗ Match the mock exactly! If, for example, an element should contain the text "Thursday", then the text "thurday" is incorrect. Be very detail-oriented.
 
   ---
 
